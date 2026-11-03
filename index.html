@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Pelayanan RT</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #005691;
+      --primary-dark: #003e68;
+      --secondary-teal: #00897b;
+      --bg-surface: #f7f9fc;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-surface);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* SPLASH SCREEN */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--primary-color);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .splash-icon-wrapper {
+      background: white;
+      color: var(--primary-color);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      margin-bottom: 24px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* HEADER & NAV BAR */
+    .app-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1.25rem 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .nav-pills .nav-link {
+      color: var(--primary-color);
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 10px 18px;
+    }
+
+    .nav-pills .nav-link.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* CARDS & UI ELEMENTS */
+    .card-custom {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      background: white;
+    }
+
+    .card-kas-saldo {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-teal));
+      color: white;
+      border-radius: 20px;
+    }
+
+    .stat-card {
+      border: 2px solid;
+      border-radius: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .avatar-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .badge-kk {
+      background-color: #e3f2fd;
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 20px;
+      padding: 6px 14px;
+    }
+
+    /* SURAT PREVIEW & PRINT STYLING */
+    .surat-container {
+      background: white;
+      padding: 40px;
+      border: 1px solid #ddd;
+      font-family: 'Times New Roman', Times, serif;
+      color: #000;
+      line-height: 1.6;
+    }
+
+    .surat-header {
+      border-bottom: 3px double #000;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stempel-digital {
+      width: 75px;
+      height: 75px;
+      border: 2px solid #003399;
+      border-radius: 50%;
+      color: #003399;
+      font-size: 8px;
+      font-weight: bold;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-12deg);
+      margin: 0 auto;
+      text-transform: uppercase;
+      padding: 4px;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #areaCetakSurat, #areaCetakSurat * {
+        visibility: visible;
+      }
+      #areaCetakSurat {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        border: none;
+      }
+      .modal-footer, .btn-close {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================== -->
+  <!-- SPLASH SCREEN / LOADING SCREEN -->
+  <!-- ========================================== -->
+  <div id="splash-screen">
+    <div class="splash-icon-wrapper">
+      <i class="fa-solid fa-house-chimney-window"></i>
+    </div>
+    <h2 class="fw-bold mb-1">Aplikasi Pelayanan RT</h2>
+    <p class="text-white-50 mb-4 fs-5">Mudah, Transparan, & Praktis</p>
+    <div class="spinner-border text-light mb-2" role="status"></div>
+    <small class="text-white-50">Memuat data warga...</small>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HEADER APLIKASI -->
+  <!-- ========================================== -->
+  <header class="app-header">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div>
+        <small class="text-white-50 d-block">Selamat Datang,</small>
+        <h3 class="fw-bold mb-0"><i class="fa-solid fa-user-shield me-2"></i>Pengurus RT</h3>
+      </div>
+      <span class="badge bg-white text-dark px-3 py-2 rounded-pill fs-6 shadow-sm d-none d-md-inline-block">
+        <i class="fa-solid fa-circle-check text-success me-1"></i> Mode Online Web
+      </span>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- KONTEN UTAMA -->
+  <!-- ========================================== -->
+  <main class="container my-4 flex-grow-1">
+    
+    <!-- KARTU INFORMASI WILAYAH -->
+    <div class="card card-custom p-3 p-md-4 mb-4 border-start border-4 border-primary">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <div class="avatar-icon bg-light text-primary me-3 fs-3">
+            <i class="fa-solid fa-city"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold text-primary mb-0" id="displayWilayahRTRW">RT 05 / RW 02</h4>
+            <span class="text-muted" id="displayWilayahDesaKec">Desa Sukamaju, Kec. Cibinong</span>
+          </div>
+        </div>
+        <button class="btn btn-outline-warning text-dark fw-semibold rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalWilayah">
+          <i class="fa-solid fa-pen-to-square me-1"></i> Ubah Wilayah
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB NAVIGASI UTAMA -->
+    <ul class="nav nav-pills nav-fill bg-white p-2 rounded-4 card-custom mb-4" id="mainTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-warga-btn" data-bs-toggle="pill" data-bs-target="#tab-warga" type="button" role="tab">
+          <i class="fa-solid fa-users me-2"></i>Data Warga
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-kas-btn" data-bs-toggle="pill" data-bs-target="#tab-kas" type="button" role="tab">
+          <i class="fa-solid fa-wallet me-2"></i>Iuran & Kas RT
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-rekap-btn" data-bs-toggle="pill" data-bs-target="#tab-rekap" type="button" role="tab">
+          <i class="fa-solid fa-chart-pie me-2"></i>Rekapitulasi Data
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-surat-btn" data-bs-toggle="pill" data-bs-target="#tab-surat" type="button" role="tab">
+          <i class="fa-solid fa-file-invoice me-2"></i>Cetak Surat
+        </button>
+      </li>
+    </ul>
+
+    <!-- TAB CONTENT -->
+    <div class="tab-content" id="mainTabContent">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: DATA WARGA -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="tab-warga" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0 text-secondary"><i class="fa-solid fa-address-book me-2"></i>Daftar Keluarga & Warga</h5>
+          <button class="btn btn-success rounded-pill px-4" onclick="bukaModalTambahWarga()">
+            <i class="fa-solid fa-plus me-1"></i> Tambah Warga
+          </button>
+        </div>
+
+        <div id="containerDataWarga">
+          <!-- Data warga per KK disuntikkan via JS -->
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: IURAN & KAS RT -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-kas" role="tabpanel">
+        
+        <!-- CARD SALDO KAS -->
+        <div class="card card-kas-saldo p-4 mb-4 shadow">
+          <div class="text-center mb-3">
+            <small class="text-white-50 fs-6">Sisa Saldo Kas RT</small>
+            <h1 class="fw-bold display-5 mb-0" id="textSisaSaldo">Rp 0</h1>
+          </div>
+          <hr class="border-white opacity-25">
+          <div class="row text-center">
+            <div class="col-6 border-end border-white opacity-75">
+              <small class="text-white-50 d-block">Total Masuk</small>
+              <span class="fw-bold text-warning fs-5" id="textTotalPemasukan">Rp 0</span>
+            </div>
+            <div class="col-6">
+              <small class="text-white-50 d-block">Total Keluar</small>
+              <span class="fw-bold text-white fs-5" id="textTotalPengeluaran">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOMBOL AKSI TRANSAKSI -->
+        <div class="row g-2 mb-4">
+          <div class="col-6">
+            <button class="btn btn-success w-100 py-3 rounded-4 fw-bold" onclick="bukaModalTransaksi('pemasukan')">
+              <i class="fa-solid fa-circle-arrow-down me-1"></i> + Pemasukan
+            </button>
+          </div>
+          <div class="col-6">
+            <button class="btn btn-danger w-100 py-3 rounded-4 fw-bold" onclick="bukaModalTransaksi('pengeluaran')">
+              <i class="fa-solid fa-circle-arrow-up me-1"></i> + Pengeluaran
+            </button>
+          </div>
+        </div>
+
+        <!-- RIWAYAT TRANSAKSI -->
+        <div class="card card-custom p-3 p-md-4">
+          <h6 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Riwayat Transaksi Kas</h6>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Jenis</th>
+                  <th>Keterangan / Warga</th>
+                  <th>Periode</th>
+                  <th>Nominal</th>
+                </tr>
+              </thead>
+              <tbody id="tableRiwayatKas">
+                <!-- Disuntikkan JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: REKAPITULASI DATA WARGA -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-rekap" role="tabpanel">
+        <h5 class="fw-bold mb-3 text-secondary"><i class="fa-solid fa-chart-line me-2"></i>Statistik Kependudukan</h5>
+        
+        <div class="row g-3">
+          <div class="col-6 col-md-4">
+            <div class="card stat-card p-3 text-center border-primary bg-white" onclick="showModalFilterWarga('Total Warga', 'semua')">
+              <small class="text-primary fw-bold d-block mb-1">Total Warga</small>
+              <h3 class="fw-bold text-primary mb-0" id="statTotalWarga">0</h3>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="card stat-card p-3 text-center bg-white" style="border-color: #6f42c1 !important;" onclick="showModalFilterWarga('Lansia (>59 Thn)', 'Lansia')">
+              <small class="fw-bold d-block mb-1" style="color: #6f42c1;">Lansia</small>
+              <h3 class="fw-bold mb-0" style="color: #6f42c1;" id="statLansia">0</h3>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="card stat-card p-3 text-center bg-white" style="border-color: #00897b !important;" onclick="showModalFilterWarga('Anak-anak (2-12 Thn)', 'Anak-anak')">
+              <small class="fw-bold d-block mb-1" style="color: #00897b;">Anak-anak</small>
+              <h3 class="fw-bold mb-0" style="color: #00897b;" id="statAnak">0</h3>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="card stat-card p-3 text-center border-info bg-white" onclick="showModalFilterWarga('Bayi / Balita (<=1 Thn)', 'Bayi')">
+              <small class="text-info fw-bold d-block mb-1">Bayi / Balita</small>
+              <h3 class="fw-bold text-info mb-0" id="statBayi">0</h3>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="card stat-card p-3 text-center border-danger bg-white" onclick="showModalFilterWarga('Ibu Hamil', 'ibuHamil')">
+              <small class="text-danger fw-bold d-block mb-1">Ibu Hamil</small>
+              <h3 class="fw-bold text-danger mb-0" id="statHamil">0</h3>
+            </div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="card stat-card p-3 text-center border-warning bg-white" onclick="showModalFilterWarga('Warga Kurang Mampu', 'kurangMampu')">
+              <small class="text-warning fw-bold d-block mb-1">Kurang Mampu</small>
+              <h3 class="fw-bold text-warning mb-0" id="statMiskin">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: CETAK SURAT PENGANTAR -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-surat" role="tabpanel">
+        <div class="card card-custom p-4 max-w-700 mx-auto">
+          <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-print me-2"></i>Formulir Pengajuan Surat RT</h5>
+          <form id="formSurat" onsubmit="generateSurat(event)">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Pilih Warga Pemohon</label>
+              <select class="form-select" id="suratWargaSelect" required>
+                <!-- Disuntikkan JS -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Jenis Surat</label>
+              <select class="form-select" id="suratJenisSelect">
+                <option value="SURAT PENGANTAR">SURAT PENGANTAR</option>
+                <option value="SURAT KETERANGAN">SURAT KETERANGAN</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Keperluan Surat</label>
+              <select class="form-select" id="suratKeperluanSelect" onchange="toggleCustomKeperluan(this)">
+                <option value="Pengurusan KTP Baru / Kartu Keluarga">Pengurusan KTP Baru / Kartu Keluarga</option>
+                <option value="Pengurusan Surat Keterangan Catatan Kepolisian (SKCK)">Pengurusan Surat Keterangan Catatan Kepolisian (SKCK)</option>
+                <option value="Pengurusan Akta Kelahiran / Kematian">Pengurusan Akta Kelahiran / Kematian</option>
+                <option value="Surat Keterangan Tidak Mampu (SKTM)">Surat Keterangan Tidak Mampu (SKTM)</option>
+                <option value="Pengurusan Izin Usaha / Melamar Pekerjaan">Pengurusan Izin Usaha / Melamar Pekerjaan</option>
+                <option value="custom">Lainnya (Tulis Sendiri)</option>
+              </select>
+            </div>
+            <div class="mb-3 d-none" id="groupKeperluanCustom">
+              <label class="form-label fw-semibold">Tuliskan Keperluan Khusus</label>
+              <input type="text" class="form-control" id="suratKeperluanCustom" placeholder="Contoh: Permohonan Beasiswa">
+            </div>
+
+            <button type="submit" class="btn btn-warning text-dark fw-bold w-100 py-3 rounded-3 fs-5 shadow-sm">
+              <i class="fa-solid fa-file-pdf me-2"></i> CETAK SURAT (PDF)
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL - UBAH WILAYAH -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="modalWilayah" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Atur Wilayah RT / RW</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formWilayah">
+            <div class="mb-3">
+              <label class="form-label">Nomor RT</label>
+              <input type="text" class="form-control" id="inputRT" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nomor RW</label>
+              <input type="text" class="form-control" id="inputRW" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nama Desa / Kelurahan</label>
+              <input type="text" class="form-control" id="inputDesa" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nama Kecamatan</label>
+              <input type="text" class="form-control" id="inputKecamatan" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary rounded-pill px-4" onclick="simpanWilayah()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL - TAMBAH / EDIT WARGA -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="modalWargaForm" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="titleModalWarga">Form Warga</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formWarga" onsubmit="simpanFormWarga(event)">
+            <input type="hidden" id="editWargaIndex" value="-1">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Nomor KK (16 Digit)</label>
+                <input type="text" class="form-control" id="wargaNoKK" required placeholder="Contoh: 3201012345670001">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">NIK Warga</label>
+                <input type="text" class="form-control" id="wargaNIK" required placeholder="3201000000000000">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Nama Lengkap</label>
+                <input type="text" class="form-control" id="wargaNama" required placeholder="Sesuai KTP / KK">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Tempat Lahir</label>
+                <input type="text" class="form-control" id="wargaTempatLahir" required placeholder="Kota / Kabupaten">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Tanggal Lahir</label>
+                <input type="date" class="form-control" id="wargaTglLahir" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Jenis Kelamin</label>
+                <select class="form-select" id="wargaJK" onchange="toggleIbuHamilOpt(this.value)">
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Agama</label>
+                <select class="form-select" id="wargaAgama">
+                  <option value="Islam">Islam</option>
+                  <option value="Kristen">Kristen</option>
+                  <option value="Katolik">Katolik</option>
+                  <option value="Hindu">Hindu</option>
+                  <option value="Buddha">Buddha</option>
+                  <option value="Khonghucu">Khonghucu</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Pekerjaan</label>
+                <select class="form-select" id="wargaPekerjaan">
+                  <option value="Karyawan Swasta">Karyawan Swasta</option>
+                  <option value="Belum/Tidak Bekerja">Belum/Tidak Bekerja</option>
+                  <option value="Mengurus Rumah Tangga">Mengurus Rumah Tangga</option>
+                  <option value="Pelajar/Mahasiswa">Pelajar/Mahasiswa</option>
+                  <option value="PNS / ASN">PNS / ASN</option>
+                  <option value="Wiraswasta / Usaha Sendiri">Wiraswasta / Usaha Sendiri</option>
+                  <option value="Buruh Harian Lepas">Buruh Harian Lepas</option>
+                  <option value="Pensiunan">Pensiunan</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Status Pernikahan</label>
+                <select class="form-select" id="wargaStatusNikah">
+                  <option value="Belum Menikah">Belum Menikah</option>
+                  <option value="Sudah Menikah">Sudah Menikah</option>
+                  <option value="Meninggal">Meninggal</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch mb-2 d-none" id="checkHamilContainer">
+                  <input class="form-check-input" type="checkbox" id="wargaIsHamil">
+                  <label class="form-check-label fw-semibold" for="wargaIsHamil">Status Ibu Hamil?</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="wargaIsMiskin">
+                  <label class="form-check-label fw-semibold" for="wargaIsMiskin">Kategori Kurang Mampu?</label>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 text-end">
+              <button type="button" class="btn btn-secondary rounded-pill me-2" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-success rounded-pill px-4">Simpan Warga</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL - TRANSAKSI KAS -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="modalTransaksi" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="titleModalTransaksi">Tambah Transaksi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formTransaksi" onsubmit="simpanTransaksi(event)">
+            <input type="hidden" id="transaksiJenis">
+            
+            <div class="mb-3 d-none" id="groupPilihWarga">
+              <label class="form-label fw-semibold">Pilih Warga Pembayar</label>
+              <select class="form-select" id="transaksiWarga">
+                <!-- Disuntikkan JS -->
+              </select>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold">Bulan</label>
+                <select class="form-select" id="transaksiBulan">
+                  <option value="Januari">Januari</option>
+                  <option value="Februari">Februari</option>
+                  <option value="Maret">Maret</option>
+                  <option value="April">April</option>
+                  <option value="Mei">Mei</option>
+                  <option value="Juni">Juni</option>
+                  <option value="Juli">Juli</option>
+                  <option value="Agustus">Agustus</option>
+                  <option value="September">September</option>
+                  <option value="Oktober">Oktober</option>
+                  <option value="November">November</option>
+                  <option value="Desember">Desember</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Tahun</label>
+                <select class="form-select" id="transaksiTahun">
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026" selected>2026</option>
+                  <option value="2027">2027</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Nominal (Rp)</label>
+              <div class="input-group">
+                <span class="input-group-text">Rp</span>
+                <input type="number" class="form-control" id="transaksiJumlah" required placeholder="50000">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold" id="labelKeterangan">Keterangan</label>
+              <input type="text" class="form-control" id="transaksiKeterangan" placeholder="Contoh: Iuran Kebersihan / Beli Lampu Jalan">
+            </div>
+
+            <div class="mt-4 text-end">
+              <button type="button" class="btn btn-secondary rounded-pill me-2" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4" id="btnSimpanTransaksi">Simpan Data</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL - DAFTAR WARGA FILTERED (REKAP) -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="modalFilterWarga" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="titleModalFilter">Daftar Warga</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-group list-group-flush" id="listFilterWarga">
+            <!-- Disuntikkan JS -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL - PRATINJAU SURAT (PDF / CETAK) -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="modalCetakSurat" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Pratinjau Surat RT</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light">
+          
+          <!-- AREA CETAK SURAT -->
+          <div class="surat-container shadow-sm mx-auto" id="areaCetakSurat">
+            <div class="surat-header text-center">
+              <h5 class="fw-bold mb-0 text-uppercase" id="suratKopRTRW">RUKUN TETANGGA 05 RUKUN WARGA 02</h5>
+              <h6 class="fw-bold text-uppercase mb-1" id="suratKopDesaKec">DESA SUKAMAJU KECAMATAN CIBINONG</h6>
+              <small class="d-block fst-italic" id="suratKopAlamat">Alamat Sekretariat: Wilayah RT 05/RW 02 Desa Sukamaju</small>
+            </div>
+
+            <div class="text-center my-4">
+              <h5 class="fw-bold text-decoration-underline mb-0" id="suratTitleDokumen">SURAT PENGANTAR</h5>
+              <small id="suratNomorDokumen">Nomor: 045.2 / 123 / RT.05 / 2026</small>
+            </div>
+
+            <p>Yang bertanda tangan di bawah ini Ketua <span id="suratTeksRTRW">RT 05 / RW 02 Desa Sukamaju, Kecamatan Cibinong</span>, menerangkan bahwa:</p>
+
+            <table class="table table-borderless table-sm my-3 ms-3">
+              <tbody>
+                <tr>
+                  <td width="180">Nama Lengkap</td>
+                  <td width="10">:</td>
+                  <td class="fw-bold" id="suratNamaWarga">-</td>
+                </tr>
+                <tr>
+                  <td>NIK (KTP)</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratNIKWarga">-</td>
+                </tr>
+                <tr>
+                  <td>No. Kartu Keluarga</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratKKWarga">-</td>
+                </tr>
+                <tr>
+                  <td>Tempat / Tgl Lahir</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratTTLWarga">-</td>
+                </tr>
+                <tr>
+                  <td>Jenis Kelamin</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratJKWarga">-</td>
+                </tr>
+                <tr>
+                  <td>Agama</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratAgamaWarga">-</td>
+                </tr>
+                <tr>
+                  <td>Pekerjaan</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratPekerjaanWarga">-</td>
+                </tr>
+                <tr>
+                  <td>Status Perkawinan</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratStatusNikahWarga">-</td>
+                </tr>
+                <tr>
+                  <td>Alamat Domisili</td>
+                  <td>:</td>
+                  <td class="fw-bold" id="suratAlamatWarga">-</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>Bahwa nama yang tersebut di atas adalah benar-benar warga domisili di wilayah RT kami, dan surat pengantar ini diberikan untuk keperluan:</p>
+
+            <div class="border border-dark p-3 text-center fw-bold my-3 fs-6" id="suratBoxKeperluan">
+              -
+            </div>
+
+            <p>Demikian Surat Pengantar ini dibuat agar dapat dipergunakan sebagaimana mestinya.</p>
+
+            <div class="row text-center mt-5">
+              <div class="col-4">
+                <small>Pemohon / Warga</small>
+                <div style="height: 60px;"></div>
+                <strong id="suratTtdWarga">( .................... )</strong>
+              </div>
+              <div class="col-4">
+                <small>Mengetahui,<br><span id="suratTtdRW">Ketua RW 02</span></small>
+                <div style="height: 60px;"></div>
+                <strong>( .................... )</strong>
+              </div>
+              <div class="col-4">
+                <small><span id="suratTglSurat">Sukamaju, 24 Mei 2026</span><br><span id="suratTtdRT">Ketua RT 05</span></small>
+                <div class="my-2">
+                  <div class="stempel-digital">
+                    <span id="suratStempelText">STEMPEL RESMI<br>RT 05</span>
+                  </div>
+                </div>
+                <strong>( Pengurus RT )</strong>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" class="btn btn-primary rounded-pill px-4" onclick="window.print()">
+            <i class="fa-solid fa-print me-1"></i> Cetak / Simpan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JAVASCRIPT LOGIKA APLIKASI -->
+  <script>
+    let appConfig = {
+      noRT: '05',
+      noRW: '02',
+      namaDesa: 'Sukamaju',
+      namaKecamatan: 'Cibinong'
+    };
+
+    let listWarga = [];
+    let listTransaksi = [];
+
+    function hideSplash() {
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.opacity = '0';
+        splash.style.visibility = 'hidden';
+        setTimeout(() => {
+          splash.style.display = 'none';
+        }, 500);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        loadDataFromStorage();
+        renderAll();
+      } catch (err) {
+        console.error("Terjadi kesalahan saat memuat data:", err);
+      } finally {
+        setTimeout(hideSplash, 1200);
+      }
+    });
+
+    setTimeout(hideSplash, 2500);
+
+    function loadDataFromStorage() {
+      try {
+        const savedConfig = localStorage.getItem('rt_config');
+        const savedWarga = localStorage.getItem('rt_warga');
+        const savedKas = localStorage.getItem('rt_kas');
+
+        if (savedConfig) appConfig = JSON.parse(savedConfig);
+        if (savedWarga) listWarga = JSON.parse(savedWarga);
+        if (savedKas) listTransaksi = JSON.parse(savedKas);
+      } catch (e) {
+        console.warn("Gagal membaca localStorage, menggunakan data default.", e);
+        listWarga = [];
+        listTransaksi = [];
+      }
+    }
+
+    function saveDataToStorage() {
+      try {
+        localStorage.setItem('rt_config', JSON.stringify(appConfig));
+        localStorage.setItem('rt_warga', JSON.stringify(listWarga));
+        localStorage.setItem('rt_kas', JSON.stringify(listTransaksi));
+      } catch (e) {
+        console.error("Gagal menyimpan ke localStorage:", e);
+      }
+    }
+
+    function renderAll() {
+      renderWilayahInfo();
+      renderDataWarga();
+      renderKasRT();
+      renderRekapitulasi();
+      renderSelectWargaSurat();
+    }
+
+    function hitungUsia(tglLahirStr) {
+      if (!tglLahirStr) return 0;
+      const today = new Date();
+      const birthDate = new Date(tglLahirStr);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return isNaN(age) ? 0 : age;
+    }
+
+    function getKategoriUsia(usia) {
+      if (usia <= 1) return 'Bayi';
+      if (usia <= 12) return 'Anak-anak';
+      if (usia <= 59) return 'Dewasa';
+      return 'Lansia';
+    }
+
+    function formatRupiah(number) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
+    }
+
+    function renderWilayahInfo() {
+      document.getElementById('displayWilayahRTRW').innerText = `RT ${appConfig.noRT} / RW ${appConfig.noRW}`;
+      document.getElementById('displayWilayahDesaKec').innerText = `Desa ${appConfig.namaDesa}, Kec. ${appConfig.namaKecamatan}`;
+      
+      document.getElementById('inputRT').value = appConfig.noRT;
+      document.getElementById('inputRW').value = appConfig.noRW;
+      document.getElementById('inputDesa').value = appConfig.namaDesa;
+      document.getElementById('inputKecamatan').value = appConfig.namaKecamatan;
+    }
+
+    function simpanWilayah() {
+      appConfig.noRT = document.getElementById('inputRT').value || '05';
+      appConfig.noRW = document.getElementById('inputRW').value || '02';
+      appConfig.namaDesa = document.getElementById('inputDesa').value || 'Sukamaju';
+      appConfig.namaKecamatan = document.getElementById('inputKecamatan').value || 'Cibinong';
+      
+      saveDataToStorage();
+      renderWilayahInfo();
+      
+      const modalElem = document.getElementById('modalWilayah');
+      const modal = bootstrap.Modal.getInstance(modalElem);
+      if (modal) modal.hide();
+    }
+
+    function toggleIbuHamilOpt(jk) {
+      const container = document.getElementById('checkHamilContainer');
+      if (jk === 'Perempuan') {
+        container.classList.remove('d-none');
+      } else {
+        container.classList.add('d-none');
+        document.getElementById('wargaIsHamil').checked = false;
+      }
+    }
+
+    function bukaModalTambahWarga() {
+      document.getElementById('editWargaIndex').value = '-1';
+      document.getElementById('titleModalWarga').innerText = 'Form Warga Baru';
+      document.getElementById('formWarga').reset();
+      toggleIbuHamilOpt('Laki-laki');
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalWargaForm'));
+      modal.show();
+    }
+
+    function bukaModalEditWarga(idx) {
+      const w = listWarga[idx];
+      if (!w) return;
+
+      document.getElementById('editWargaIndex').value = idx;
+      document.getElementById('titleModalWarga').innerText = 'Edit Data Warga';
+      
+      document.getElementById('wargaNoKK').value = w.nomorKK;
+      document.getElementById('wargaNIK').value = w.nik;
+      document.getElementById('wargaNama').value = w.nama;
+      document.getElementById('wargaTempatLahir').value = w.tempatLahir;
+      document.getElementById('wargaTglLahir').value = w.tanggalLahir;
+      document.getElementById('wargaJK').value = w.jenisKelamin;
+      document.getElementById('wargaAgama').value = w.agama;
+      document.getElementById('wargaPekerjaan').value = w.pekerjaan;
+      document.getElementById('wargaStatusNikah').value = w.statusPernikahan;
+      
+      toggleIbuHamilOpt(w.jenisKelamin);
+      document.getElementById('wargaIsHamil').checked = w.isIbuHamil || false;
+      document.getElementById('wargaIsMiskin').checked = w.isKurangMampu || false;
+
+      const modal = new bootstrap.Modal(document.getElementById('modalWargaForm'));
+      modal.show();
+    }
+
+    function hapusWarga(idx) {
+      const w = listWarga[idx];
+      if (!w) return;
+
+      if (confirm(`Apakah Anda yakin ingin menghapus data warga: ${w.nama}?`)) {
+        listWarga.splice(idx, 1);
+        saveDataToStorage();
+        renderAll();
+      }
+    }
+
+    function simpanFormWarga(event) {
+      event.preventDefault();
+
+      const editIdx = parseInt(document.getElementById('editWargaIndex').value);
+      const dataWargaObj = {
+        nomorKK: document.getElementById('wargaNoKK').value,
+        nik: document.getElementById('wargaNIK').value,
+        nama: document.getElementById('wargaNama').value,
+        tempatLahir: document.getElementById('wargaTempatLahir').value,
+        tanggalLahir: document.getElementById('wargaTglLahir').value,
+        jenisKelamin: document.getElementById('wargaJK').value,
+        agama: document.getElementById('wargaAgama').value,
+        pekerjaan: document.getElementById('wargaPekerjaan').value,
+        statusPernikahan: document.getElementById('wargaStatusNikah').value,
+        isIbuHamil: document.getElementById('wargaIsHamil').checked,
+        isKurangMampu: document.getElementById('wargaIsMiskin').checked
+      };
+
+      if (editIdx >= 0) {
+        listWarga[editIdx] = dataWargaObj;
+      } else {
+        listWarga.push(dataWargaObj);
+      }
+
+      saveDataToStorage();
+      renderAll();
+
+      document.getElementById('formWarga').reset();
+      const modalElem = document.getElementById('modalWargaForm');
+      const modal = bootstrap.Modal.getInstance(modalElem);
+      if (modal) modal.hide();
+    }
+
+    function renderDataWarga() {
+      const container = document.getElementById('containerDataWarga');
+      container.innerHTML = '';
+
+      if (listWarga.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted my-5 py-4 card card-custom"><p class="mb-0 fs-5"><i class="fa-solid fa-users-slash me-2"></i>Belum ada data warga terdaftar.<br><small class="fs-6">Klik tombol "+ Tambah Warga" di kanan atas untuk menambahkan.</small></p></div>`;
+        return;
+      }
+
+      const keluargaMap = {};
+      listWarga.forEach((w, globalIndex) => {
+        if (!keluargaMap[w.nomorKK]) keluargaMap[w.nomorKK] = [];
+        keluargaMap[w.nomorKK].push({ ...w, globalIndex });
+      });
+
+      Object.keys(keluargaMap).forEach(noKK => {
+        const anggota = keluargaMap[noKK];
+        let cardHTML = `
+          <div class="card card-custom mb-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold mb-0 text-primary"><i class="fa-solid fa-folder-tree me-2"></i>No KK: ${noKK}</h6>
+              <span class="badge badge-kk">${anggota.length} Anggota</span>
+            </div>
+            <div class="card-body pt-0">
+              <div class="row g-3">
+        `;
+
+        anggota.forEach(w => {
+          const usia = hitungUsia(w.tanggalLahir);
+          const iconGender = w.jenisKelamin === 'Laki-laki' ? 'fa-mars text-primary' : 'fa-venus text-danger';
+
+          cardHTML += `
+            <div class="col-md-6">
+              <div class="p-3 rounded-4 ${w.isKurangMampu ? 'bg-warning-subtle' : 'bg-light'} border position-relative">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fa-solid ${iconGender} fs-4 me-2"></i>
+                  <h6 class="fw-bold mb-0 me-auto">${w.nama}</h6>
+                  ${w.isIbuHamil ? '<span class="badge bg-danger rounded-pill me-1">Hamil</span>' : ''}
+                  ${w.isKurangMampu ? '<span class="badge bg-warning text-dark rounded-pill me-1">Kurang Mampu</span>' : ''}
+                  <div class="btn-group btn-group-sm ms-2">
+                    <button class="btn btn-outline-primary btn-sm rounded-circle me-1" title="Edit Warga" onclick="bukaModalEditWarga(${w.globalIndex})">
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rounded-circle" title="Hapus Warga" onclick="hapusWarga(${w.globalIndex})">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <small class="text-muted d-block mb-1"><strong>NIK:</strong> ${w.nik}</small>
+                <small class="text-muted d-block"><strong>TTL:</strong> ${w.tempatLahir}, ${w.tanggalLahir} (${usia} Thn)</small>
+                <small class="text-muted d-block"><strong>Pekerjaan:</strong> ${w.pekerjaan}</small>
+                <small class="text-muted d-block"><strong>Status/Agama:</strong> ${w.statusPernikahan} | ${w.agama}</small>
+              </div>
+            </div>
+          `;
+        });
+
+        cardHTML += `
+              </div>
+            </div>
+          </div>
+        `;
+
+        container.innerHTML += cardHTML;
+      });
+    }
+
+    function bukaModalTransaksi(jenis) {
+      document.getElementById('transaksiJenis').value = jenis;
+      const modalTitle = document.getElementById('titleModalTransaksi');
+      const groupWarga = document.getElementById('groupPilihWarga');
+      const labelKet = document.getElementById('labelKeterangan');
+      const btnSimpan = document.getElementById('btnSimpanTransaksi');
+      const selectWarga = document.getElementById('transaksiWarga');
+
+      selectWarga.innerHTML = '';
+      if (listWarga.length === 0) {
+        selectWarga.innerHTML = `<option value="">Belum ada data warga terdaftar</option>`;
+      } else {
+        listWarga.forEach(w => {
+          selectWarga.innerHTML += `<option value="${w.nama}">${w.nama}</option>`;
+        });
+      }
+
+      if (jenis === 'pemasukan') {
+        modalTitle.innerText = 'Catat Pemasukan / Iuran';
+        modalTitle.className = 'modal-title fw-bold text-success';
+        groupWarga.classList.remove('d-none');
+        labelKet.innerText = 'Keterangan (Opsional)';
+        btnSimpan.className = 'btn btn-success rounded-pill px-4';
+      } else {
+        modalTitle.innerText = 'Catat Pengeluaran Kas RT';
+        modalTitle.className = 'modal-title fw-bold text-danger';
+        groupWarga.classList.add('d-none');
+        labelKet.innerText = 'Tujuan / Keterangan Pengeluaran';
+        btnSimpan.className = 'btn btn-danger rounded-pill px-4';
+      }
+
+      const modal = new bootstrap.Modal(document.getElementById('modalTransaksi'));
+      modal.show();
+    }
+
+    function simpanTransaksi(event) {
+      event.preventDefault();
+
+      const jenis = document.getElementById('transaksiJenis').value;
+      const nominal = parseFloat(document.getElementById('transaksiJumlah').value) || 0;
+      const ketInput = document.getElementById('transaksiKeterangan').value;
+      const namaWarga = jenis === 'pemasukan' ? document.getElementById('transaksiWarga').value : null;
+
+      const transaksiBaru = {
+        id: Date.now().toString(),
+        jenis: jenis,
+        keterangan: ketInput || (jenis === 'pemasukan' ? 'Iuran Warga' : 'Pengeluaran RT'),
+        jumlah: nominal,
+        bulan: document.getElementById('transaksiBulan').value,
+        tahun: parseInt(document.getElementById('transaksiTahun').value),
+        tanggal: new Date().toISOString(),
+        namaWarga: namaWarga
+      };
+
+      listTransaksi.push(transaksiBaru);
+      saveDataToStorage();
+      renderKasRT();
+
+      document.getElementById('formTransaksi').reset();
+      const modalElem = document.getElementById('modalTransaksi');
+      const modal = bootstrap.Modal.getInstance(modalElem);
+      if (modal) modal.hide();
+    }
+
+    function renderKasRT() {
+      const totalMasuk = listTransaksi.filter(t => t.jenis === 'pemasukan').reduce((sum, t) => sum + t.jumlah, 0);
+      const totalKeluar = listTransaksi.filter(t => t.jenis === 'pengeluaran').reduce((sum, t) => sum + t.jumlah, 0);
+      const sisaSaldo = totalMasuk - totalKeluar;
+
+      document.getElementById('textSisaSaldo').innerText = formatRupiah(sisaSaldo);
+      document.getElementById('textTotalPemasukan').innerText = formatRupiah(totalMasuk);
+      document.getElementById('textTotalPengeluaran').innerText = formatRupiah(totalKeluar);
+
+      const tableBody = document.getElementById('tableRiwayatKas');
+      tableBody.innerHTML = '';
+
+      if (listTransaksi.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada riwayat transaksi</td></tr>`;
+        return;
+      }
+
+      const sorted = [...listTransaksi].reverse();
+
+      sorted.forEach(t => {
+        const isMasuk = t.jenis === 'pemasukan';
+        const badgeJenis = isMasuk 
+          ? `<span class="badge bg-success-subtle text-success"><i class="fa-solid fa-arrow-down me-1"></i>Masuk</span>`
+          : `<span class="badge bg-danger-subtle text-danger"><i class="fa-solid fa-arrow-up me-1"></i>Keluar</span>`;
+
+        tableBody.innerHTML += `
+          <tr>
+            <td>${badgeJenis}</td>
+            <td class="fw-semibold">${isMasuk ? (t.namaWarga || 'Warga') : t.keterangan}<br><small class="text-muted font-normal">${t.keterangan}</small></td>
+            <td>${t.bulan} ${t.tahun}</td>
+            <td class="fw-bold ${isMasuk ? 'text-success' : 'text-danger'}">${isMasuk ? '+' : '-'} ${formatRupiah(t.jumlah)}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderRekapitulasi() {
+      let countTotal = listWarga.length;
+      let countLansia = 0;
+      let countAnak = 0;
+      let countBayi = 0;
+      let countHamil = 0;
+      let countMiskin = 0;
+
+      listWarga.forEach(w => {
+        const u = hitungUsia(w.tanggalLahir);
+        const kat = getKategoriUsia(u);
+
+        if (kat === 'Lansia') countLansia++;
+        if (kat === 'Anak-anak') countAnak++;
+        if (kat === 'Bayi') countBayi++;
+        if (w.isIbuHamil) countHamil++;
+        if (w.isKurangMampu) countMiskin++;
+      });
+
+      document.getElementById('statTotalWarga').innerText = `${countTotal} Orang`;
+      document.getElementById('statLansia').innerText = `${countLansia} Orang`;
+      document.getElementById('statAnak').innerText = `${countAnak} Orang`;
+      document.getElementById('statBayi').innerText = `${countBayi} Orang`;
+      document.getElementById('statHamil').innerText = `${countHamil} Orang`;
+      document.getElementById('statMiskin').innerText = `${countMiskin} Orang`;
+    }
+
+    function showModalFilterWarga(title, filterKey) {
+      document.getElementById('titleModalFilter').innerText = `Daftar: ${title}`;
+      const container = document.getElementById('listFilterWarga');
+      container.innerHTML = '';
+
+      let filtered = [];
+      if (filterKey === 'semua') filtered = listWarga;
+      else if (filterKey === 'ibuHamil') filtered = listWarga.filter(w => w.isIbuHamil);
+      else if (filterKey === 'kurangMampu') filtered = listWarga.filter(w => w.isKurangMampu);
+      else filtered = listWarga.filter(w => getKategoriUsia(hitungUsia(w.tanggalLahir)) === filterKey);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<li class="list-group-item text-center text-muted">Tidak ada data warga pada kategori ini.</li>`;
+      } else {
+        filtered.forEach(w => {
+          const u = hitungUsia(w.tanggalLahir);
+          container.innerHTML += `
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <div>
+                <h6 class="fw-bold mb-0">${w.nama}</h6>
+                <small class="text-muted">NIK: ${w.nik} | Usia: ${u} Thn (${getKategoriUsia(u)})</small>
+              </div>
+              <span class="badge bg-light text-dark border">${w.jenisKelamin}</span>
+            </li>
+          `;
+        });
+      }
+
+      const modal = new bootstrap.Modal(document.getElementById('modalFilterWarga'));
+      modal.show();
+    }
+
+    function renderSelectWargaSurat() {
+      const select = document.getElementById('suratWargaSelect');
+      select.innerHTML = '';
+      if (listWarga.length === 0) {
+        select.innerHTML = `<option value="">Belum ada warga terdaftar</option>`;
+        return;
+      }
+      listWarga.forEach((w, idx) => {
+        select.innerHTML += `<option value="${idx}">${w.nama} (NIK: ${w.nik})</option>`;
+      });
+    }
+
+    function toggleCustomKeperluan(elem) {
+      const containerCustom = document.getElementById('groupKeperluanCustom');
+      if (elem.value === 'custom') {
+        containerCustom.classList.remove('d-none');
+      } else {
+        containerCustom.classList.add('d-none');
+      }
+    }
+
+    function generateSurat(event) {
+      event.preventDefault();
+      if (listWarga.length === 0) {
+        alert("Belum ada data warga untuk dibuatkan surat.");
+        return;
+      }
+
+      const idxWarga = document.getElementById('suratWargaSelect').value;
+      const warga = listWarga[idxWarga];
+      if (!warga) return;
+
+      const jenisSurat = document.getElementById('suratJenisSelect').value;
+
+      const selKeperluan = document.getElementById('suratKeperluanSelect').value;
+      const valCustom = document.getElementById('suratKeperluanCustom').value;
+      const keperluan = selKeperluan === 'custom' ? (valCustom || 'Pengurusan Administrasi') : selKeperluan;
+
+      const now = new Date();
+      const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const tglSuratFormatted = `${appConfig.namaDesa}, ${now.getDate()} ${bulanIndo[now.getMonth()]} ${now.getFullYear()}`;
+      const randomNo = Math.floor(100 + Math.random() * 899);
+      const noSurat = `045.2 / ${randomNo} / RT.${appConfig.noRT} / ${now.getFullYear()}`;
+
+      document.getElementById('suratKopRTRW').innerText = `RUKUN TETANGGA ${appConfig.noRT} RUKUN WARGA ${appConfig.noRW}`;
+      document.getElementById('suratKopDesaKec').innerText = `DESA ${appConfig.namaDesa.toUpperCase()} KECAMATAN ${appConfig.namaKecamatan.toUpperCase()}`;
+      document.getElementById('suratKopAlamat').innerText = `Alamat Sekretariat: Wilayah RT ${appConfig.noRT}/RW ${appConfig.noRW} Desa ${appConfig.namaDesa}`;
+      
+      document.getElementById('suratTitleDokumen').innerText = jenisSurat;
+      document.getElementById('suratNomorDokumen').innerText = `Nomor: ${noSurat}`;
+      document.getElementById('suratTeksRTRW').innerText = `RT ${appConfig.noRT} / RW ${appConfig.noRW} Desa ${appConfig.namaDesa}, Kecamatan ${appConfig.namaKecamatan}`;
+
+      document.getElementById('suratNamaWarga').innerText = warga.nama;
+      document.getElementById('suratNIKWarga').innerText = warga.nik;
+      document.getElementById('suratKKWarga').innerText = warga.nomorKK;
+      document.getElementById('suratTTLWarga').innerText = `${warga.tempatLahir}, ${warga.tanggalLahir}`;
+      document.getElementById('suratJKWarga').innerText = warga.jenisKelamin;
+      document.getElementById('suratAgamaWarga').innerText = warga.agama;
+      document.getElementById('suratPekerjaanWarga').innerText = warga.pekerjaan;
+      document.getElementById('suratStatusNikahWarga').innerText = warga.statusPernikahan;
+      document.getElementById('suratAlamatWarga').innerText = `RT ${appConfig.noRT} / RW ${appConfig.noRW} Desa ${appConfig.namaDesa}`;
+
+      document.getElementById('suratBoxKeperluan').innerText = keperluan;
+
+      document.getElementById('suratTtdWarga').innerText = `( ${warga.nama} )`;
+      document.getElementById('suratTtdRW').innerText = `Ketua RW ${appConfig.noRW}`;
+      document.getElementById('suratTtdRT').innerText = `Ketua RT ${appConfig.noRT}`;
+      document.getElementById('suratTglSurat').innerText = tglSuratFormatted;
+      document.getElementById('suratStempelText').innerHTML = `STEMPEL RESMI<br>RT ${appConfig.noRT}`;
+
+      const modal = new bootstrap.Modal(document.getElementById('modalCetakSurat'));
+      modal.show();
+    }
+  </script>
+</body>
+</html>
